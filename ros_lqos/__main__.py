@@ -1,17 +1,31 @@
-import schedule
-import time
+from typing import List
+
+from .config import MIKROTIKS, PARENTS, HEADER
+from .ppp import make_shaped_ppp
+from .dhcp import make_shaped_lease
+from .queue import make_shaped_queue
 
 
-def job():
-    print("Running automated task...")
+def quitt():
+    for _, ros in MIKROTIKS.items():
+        ros.sk.close()
 
 
 def main():
-    schedule.every(10).minutes.do(job)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    results: List[str] = []
+    results.extend(make_shaped_ppp())
+    results.extend(make_shaped_lease())
+    results.extend(make_shaped_queue())
+    cpu = len(PARENTS) - 1
+    finals = [HEADER]
+    for line in results:
+        finals.append(line.replace("XPARENT", PARENTS[cpu]))
+        if cpu == 0:
+            cpu = len(PARENTS)
+        cpu -= 1
+    return "\n".join(finals)
 
 
 if __name__ == "__main__":
-    main()
+    print(main())
+    quitt()
