@@ -45,13 +45,12 @@ def make_speed(profile: PPPProfile, queue: Optional[Queue] = None):
     umax = UPLOAD
     if queue and queue.max_limit and queue.limit_at:
         # 8M/8M 0/0 0/0 0/0 6 4M/4M
-        umax, dmax = queue.max_limit.replace("M", "").split("/")
-        umin, dmin = queue.limit_at.replace("M", "").split("/")
+        umax, dmax = queue.umax, queue.dmax
+        umin, dmin = queue.umin, queue.dmin
     if queue and queue.max_limit:
-        u, d = queue.max_limit.replace("M", "").split("/")
-        dmax = int(d)
+        dmax = queue.dmax
         dmin = dmax // DIV
-        umax = int(u)
+        umax = queue.umax
         umin = umax // DIV
     elif not profile.rate_limit:
         pass

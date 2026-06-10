@@ -14,8 +14,8 @@ def quitt():
 def main():
     results: List[str] = []
     results.extend(make_shaped_ppp())
-    results.extend(make_shaped_lease())
     results.extend(make_shaped_queue())
+    results.extend(make_shaped_lease())
     cpu = len(PARENTS) - 1
     finals = [HEADER]
     for line in results:

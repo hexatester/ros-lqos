@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
-from .config import MIKROTIKS
+from .config import MIKROTIKS, DOWNLOAD, UPLOAD
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,32 @@ class Queue:
     max_limit: Optional[str] = None
     limit_at: Optional[str] = None
     parent: Optional[str] = None
+    dmax: int = DOWNLOAD
+    umax: int = UPLOAD
+    dmin: int = 1
+    umin: int = 1
+
+    def __post_init__(self):
+        if self.limit_at:
+            try:
+                u, d = self.limit_at.split("/")
+                u, d = int(u) // 1000000, int(d) // 1000000
+                if u > 0:
+                    self.umin = u
+                if d > 0:
+                    self.umin = d
+            except:
+                pass
+        if self.max_limit:
+            try:
+                u, d = self.max_limit.split("/")
+                u, d = int(u) // 1000000, int(d) // 1000000
+                if u > 0 and u > self.umin:
+                    self.umax = u
+                if d > 0 and d > self.dmin:
+                    self.dmax = d
+            except:
+                pass
 
     @classmethod
     def from_line(cls, line: Tuple[str, dict]) -> Optional["Queue"]:
@@ -227,11 +253,14 @@ def get_queues():
     for addr, api in MIKROTIKS.items():
         results[addr] = dict()
         responses = api.talk(
-            ["/queue/simple/print", "=.proplist=name,rate-limit,parent-queue"]
+            [
+                "/queue/simple/print",
+                "=.proplist=name,target,max-limit,limit-at,comment,parent",
+            ]
         )
-        pppoe: Queue
-        for pppoe in Queue.from_res(responses):
-            results[addr][pppoe.name] = pppoe
+        queue: Queue
+        for queue in Queue.from_res(responses):
+            results[addr][queue.name] = queue
     return results
 
 

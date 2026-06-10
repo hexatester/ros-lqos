@@ -39,13 +39,12 @@ def make_speed(queue: Queue):
         pass
     elif queue.limit_at:
         # 8M/8M 0/0 0/0 0/0 6 4M/4M
-        umax, dmax = queue.max_limit.replace("M", "").split("/")
-        umin, dmin = queue.limit_at.replace("M", "").split("/")
+        umax, dmax = queue.umax, queue.dmax
+        umin, dmin = queue.dmin, queue.dmax
     else:
-        u, d = queue.max_limit.replace("M", "").split("/")
-        dmax = int(d)
+        dmax = queue.dmax
         dmin = dmax // DIV
-        umax = int(u)
+        umax = queue.umax
         umin = umax // DIV
     return (str(dmin), str(umin), str(dmax), str(umax))
 
